@@ -127,7 +127,7 @@ spider_res = pd.merge(pep_blast,spider_res,on='Subject id',how='left')
 spider_name = sys.argv[1].split('.')[0] + '_blast_spider.txt'
 spider_res.to_csv(spider_name,sep='\t',header=True,index=False)
 spider_name = sys.argv[1].split('.')[0] + '_blast_spider.xlsx'
-spider_res.to_excel(spider_name,sep='\t',header=True,sheet_name=None)
+spider_res.to_excel(spider_name,header=True,sheet_name=None)
 
 pri = 'echo Uniprot crawler has been completed！\n'
 subprocess.call(pri,shell=True)

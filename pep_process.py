@@ -54,9 +54,11 @@ else:
     pri = 'echo 已经完成Blast，无需再次Blast!\n'
     subprocess.call(pri,shell=True)
 
-os.remove('./run_blastp.sh')
+if str(sys.argv[3]) == '0':
+    os.remove('./run_blastp.sh')
 
 # 蛋白序列比对结果筛选
+blast_final_file_name = sys.argv[1].split('.')[0] + '_swissprot_blast.txt'
 if str(sys.argv[3]) == '0':
     blast_final_file_name = sys.argv[1].split('.')[0] + '_swissprot_blast.txt'
     col_names = ['Query id','Subject id','identity','alignment length','mismatches','gap openings','q.Start','q.End','s.Start','s.End','E value','score']
@@ -83,8 +85,7 @@ subprocess.call('bash run_temp.sh',shell=True)
 os.remove('./run_temp.sh')
 
 
-os.makedirs('./spider_res')
-
+os.makedirs('spider_res')
 
 for i in range(int(sys.argv[2]),pep_file.shape[0]):
     if (pep_file.shape[0] - int(sys.argv[2])) > 50:

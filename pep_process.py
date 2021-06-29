@@ -91,7 +91,7 @@ if str(sys.argv[3]) == '0':
 
 for i in range(int(sys.argv[3]),pep_file.shape[0]):
     if (pep_file.shape[0] - int(sys.argv[2])) > 50:
-        time.sleep(5)
+        time.sleep(1)
     spider_res = pd.DataFrame(columns=('Subject id','pep id','organism','gene name','protein','status','pes seq original','pep seq'))
 
     pep_id = str.split(pep_file['Subject id'][i],'|')[1]

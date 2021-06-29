@@ -48,17 +48,20 @@ bash = open('run_blastp.sh','w')
 bash.write(blast_shell)
 bash.close()
 
-if str(sys.argv[3]) == '0':
+if str(sys.argv[4]) == 'T':
     subprocess.call('bash run_blastp.sh',shell=True)
 else:
     pri = 'echo 已经完成Blast，无需再次Blast!\n'
     subprocess.call(pri,shell=True)
+    pri = 'echo -----------------------------------------------\n'
+    subprocess.call(pri,shell=True)
+
 
 os.remove('./run_blastp.sh')
 
 # 蛋白序列比对结果筛选
 blast_final_file_name = sys.argv[1].split('.')[0] + '_swissprot_blast.txt'
-if str(sys.argv[3]) == '0':
+if str(sys.argv[4]) == 'T':
     blast_final_file_name = sys.argv[1].split('.')[0] + '_swissprot_blast.txt'
     col_names = ['Query id','Subject id','identity','alignment length','mismatches','gap openings','q.Start','q.End','s.Start','s.End','E value','score']
 
@@ -86,10 +89,9 @@ os.remove('./run_temp.sh')
 if str(sys.argv[3]) == '0':
     os.makedirs('spider_res')
 
-for i in range(int(sys.argv[2]),pep_file.shape[0]):
+for i in range(int(sys.argv[3]),pep_file.shape[0]):
     if (pep_file.shape[0] - int(sys.argv[2])) > 50:
         time.sleep(5)
-
     spider_res = pd.DataFrame(columns=('Subject id','pep id','organism','gene name','protein','status','pes seq original','pep seq'))
 
     pep_id = str.split(pep_file['Subject id'][i],'|')[1]
@@ -141,7 +143,7 @@ for i in range(int(sys.argv[2]),pep_file.shape[0]):
 
         for file in files_spider:  
             file_path = './spider_res/' + file
-            file_temp = pd.read_table(filepath,sep='\t',header=0)
+            file_temp = pd.read_table(file_path,sep='\t',header=0)
             
             res_spider_final = pd.concat([res_spider_final,file_temp],axis=0)
     

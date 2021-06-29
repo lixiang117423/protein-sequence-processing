@@ -87,7 +87,7 @@ os.makedirs('./spider_res')
 
 
 for i in range(int(sys.argv[2]),pep_file.shape[0]):
-    if pep_file.shape[0] >50:
+    if (pep_file.shape[0] - int(sys.argv[2])) > 50:
         time.sleep(5)
 
     spider_res = pd.DataFrame(columns=('Subject id','pep id','organism','gene name','protein','status','pes seq original','pep seq'))

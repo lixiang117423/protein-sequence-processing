@@ -42,35 +42,38 @@ blast_out = '/' +str.split(blast_out,':')[0].lower() + str.split(blast_out,':')[
 
 res_name = '/' +str.split(res_name,':')[0].lower() + str.split(res_name,':')[1]
 
-blast_shell = 'blastp -query ' + res_name + ' -db /e/Blast+/database/swissprot/blastp/swissprot -num_threads 8 -evalue 1e-5 -outfmt 6 -out ' +  blast_out
+blast_shell = 'blastp -query ' + res_name + ' -db /e/Blast+/database/swissprot/blastp/swissprot -num_threads 12 -evalue 1e-5 -outfmt 6 -out ' +  blast_out
 
 bash = open('run_blastp.sh','w')
 bash.write(blast_shell)
 bash.close()
 
-subprocess.call('bash run_blastp.sh',shell=True)
+if str(sys.argv[3]) == '0':
+    subprocess.call('bash run_blastp.sh',shell=True)
+else:
+    pri = 'echo 已经完成Blast，无需再次Blast!\n'
+    subprocess.call(pri,shell=True)
+
 os.remove('./run_blastp.sh')
 
-
 # 蛋白序列比对结果筛选
-blast_final_file_name = sys.argv[1].split('.')[0] + '_swissprot_blast.txt'
-col_names = ['Query id','Subject id','identity','alignment length','mismatches','gap openings','q.Start','q.End','s.Start','s.End','E value','score']
+if str(sys.argv[3]) == '0':
+    blast_final_file_name = sys.argv[1].split('.')[0] + '_swissprot_blast.txt'
+    col_names = ['Query id','Subject id','identity','alignment length','mismatches','gap openings','q.Start','q.End','s.Start','s.End','E value','score']
 
-pep_blast = pd.read_table(blast_final_file_name,sep='\t',header=None,names=col_names)
-pep_blast = pep_blast.loc[pep_blast['identity'] >= float(sys.argv[2])]
-pep_blast.reset_index(drop=True,inplace=True) 
+    pep_blast = pd.read_table(blast_final_file_name,sep='\t',header=None,names=col_names)
+    pep_blast = pep_blast.loc[pep_blast['identity'] >= float(sys.argv[2])]
+    pep_blast.reset_index(drop=True,inplace=True) 
 
-pep_blast.to_csv(blast_final_file_name,header=True,index=False)
+    pep_blast.to_csv(blast_final_file_name,header=True,index=False)
 
-pri = 'echo Protein sequence alignment has been completed！\n'
-subprocess.call(pri,shell=True)
-pri = 'echo -----------------------------------------------\n'
-subprocess.call(pri,shell=True)
+    pri = 'echo Protein sequence alignment has been completed！\n'
+    subprocess.call(pri,shell=True)
+    pri = 'echo -----------------------------------------------\n'
+    subprocess.call(pri,shell=True)
 
 # 蛋白信息爬虫
 pep_file = pd.read_table(blast_final_file_name,sep=',',header=0)
-
-spider_res = pd.DataFrame(columns=('Subject id','pep id','organism','gene name','protein','status','pes seq original','pep seq'))
 
 bash = open('run_temp.sh','w')
 bash.write('echo Crawler started......')
@@ -79,9 +82,15 @@ bash.close()
 subprocess.call('bash run_temp.sh',shell=True)
 os.remove('./run_temp.sh')
 
-for i in range(0,pep_file.shape[0]):
+
+os.makedirs('./spider_res')
+
+
+for i in range(int(sys.argv[2]),pep_file.shape[0]):
     if pep_file.shape[0] >50:
         time.sleep(5)
+
+    spider_res = pd.DataFrame(columns=('Subject id','pep id','organism','gene name','protein','status','pes seq original','pep seq'))
 
     pep_id = str.split(pep_file['Subject id'][i],'|')[1]
 
@@ -122,16 +131,30 @@ for i in range(0,pep_file.shape[0]):
     subprocess.call('bash run_temp.sh',shell=True)
     os.remove('./run_temp.sh')
 
-spider_res = pd.merge(pep_blast,spider_res,on='Subject id',how='left')
+    spider_name = './spider_res/' + sys.argv[1].split('.')[0] + '_'+ str(i) +'_blast_spider.txt'
+    spider_res.to_csv(spider_name,sep='\t',header=True,index=False)
 
-spider_name = sys.argv[1].split('.')[0] + '_blast_spider.txt'
-spider_res.to_csv(spider_name,sep='\t',header=True,index=False)
-spider_name = sys.argv[1].split('.')[0] + '_blast_spider.xlsx'
-spider_res.to_csv(spider_name,header=True,index=False)
+    if i == (pep_file.shape[0]-1):
+        files_spider = os.listdir('./spider_res/')
 
-pri = 'echo Uniprot crawler has been completed！\n'
-subprocess.call(pri,shell=True)
-pri = 'echo -----------------------------------------------\n'
-subprocess.call(pri,shell=True)
+        res_spider_final = pd.DataFrame(columns=('Subject id','pep id','organism','gene name','protein','status','pes seq original','pep seq'))
+
+        for file in files_spider:  
+            file_path = './spider_res/' + file
+            file_temp = pd.read_table(filepath,sep='\t',header=0)
+            
+            res_spider_final = pd.concat([res_spider_final,file_temp],axis=0)
+    
+        spider_res = pd.merge(pep_blast,res_spider_final,on='Subject id',how='left')
+
+        spider_name = sys.argv[1].split('.')[0] + '_blast_spider.txt'
+        spider_res.to_csv(spider_name,sep='\t',header=True,index=False)
+        spider_name = sys.argv[1].split('.')[0] + '_blast_spider.xlsx'
+        spider_res.to_csv(spider_name,header=True,index=False)
+
+        pri = 'echo Uniprot crawler has been completed！\n'
+        subprocess.call(pri,shell=True)
+        pri = 'echo -----------------------------------------------\n'
+        subprocess.call(pri,shell=True)
 
 

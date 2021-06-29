@@ -2,3 +2,6 @@
 
 `pep_process.py`功能：输入“Acuce”的基因ID和相似度参数，返回`UbiProt`的爬虫结果。相似度参数是用于筛选Blastp的结果。
 
+`KEGG爬虫.py`用于爬取KEGG相关信息。
+
+`文件合并.r`用于合并爬虫后的结果。

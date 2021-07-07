@@ -150,7 +150,8 @@ for i in range(int(sys.argv[3]),pep_file.shape[0]):
         col_names = ['Query id','Subject id','identity','alignment length','mismatches','gap openings','q.Start','q.End','s.Start','s.End','E value','score']
 
         pep_blast = pd.read_table(blast_final_file_name,sep=',',header=0,names=col_names)
-        #pep_blast = pep_blast.loc[pep_blast['identity'] >= float(sys.argv[2])]
+        pep_blast['identity'] = pep_blast['identity'].astype('float64')
+        pep_blast = pep_blast.loc[pep_blast['identity'] >= float(sys.argv[2])]
         pep_blast.reset_index(drop=True,inplace=True)
 
         spider_res = pd.merge(pep_blast,res_spider_final,on='Subject id',how='left')

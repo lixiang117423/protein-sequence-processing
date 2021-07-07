@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 import re
 import time
 
-pep = pd.read_table('D:/坚果云/科研相关/数据/纯系/基因组/genome/Python处理Acuce蛋白序列/pep_seq.txt',sep=' ',header=None,names=['pepID','geneID','sequence'])
+pep = pd.read_table('D:/其他数据/Acuce/基因组/genome/Python处理Acuce蛋白序列/pep_seq.txt',sep=' ',header=None,names=['pepID','geneID','sequence'])
 
 path = str.replace(os.getcwd(),'\\','/') + '/'
 
@@ -89,7 +89,7 @@ os.remove('./run_temp.sh')
 if str(sys.argv[3]) == '0':
     os.makedirs('spider_res')
 
-for i in range(int(sys.argv[3]),pep_file.shape[0]):
+for i in range(int(sys.argv[3]),(pep_file.shape[0]+1)):
     if (pep_file.shape[0] - int(sys.argv[2])) > 50:
         time.sleep(1)
     spider_res = pd.DataFrame(columns=('Subject id','pep id','organism','gene name','protein','status','pes seq original','pep seq'))
@@ -146,7 +146,13 @@ for i in range(int(sys.argv[3]),pep_file.shape[0]):
             file_temp = pd.read_table(file_path,sep='\t',header=0)
             
             res_spider_final = pd.concat([res_spider_final,file_temp],axis=0)
-    
+
+        col_names = ['Query id','Subject id','identity','alignment length','mismatches','gap openings','q.Start','q.End','s.Start','s.End','E value','score']
+
+        pep_blast = pd.read_table(blast_final_file_name,sep='\t',header=None,names=col_names)
+        pep_blast = pep_blast.loc[pep_blast['identity'] >= float(sys.argv[2])]
+        pep_blast.reset_index(drop=True,inplace=True)
+
         spider_res = pd.merge(pep_blast,res_spider_final,on='Subject id',how='left')
 
         spider_name = sys.argv[1].split('.')[0] + '_blast_spider.txt'
